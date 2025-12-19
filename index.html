@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUPERVECTAR AceStream DEPORTES</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #181818;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+  }
+
+  header {
+    background: #222;
+    padding: 10px;
+    text-align: center;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #FFD700;
+  }
+
+  .header-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+
+  #searchInput {
+    width: 90%;
+    max-width: 400px;
+    padding: 8px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+
+  .category-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background: #222;
+    overflow-x: visible;
+  }
+
+  .category-btn {
+    flex: 0 1 auto;
+    white-space: normal;
+    text-align: center;
+    background: #444;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .category-btn.active {
+    background: #ff5722;
+    color: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(255,87,34,0.6);
+  }
+
+  #notice {
+    text-align: center;
+    background: #ffcc00;
+    color: #000;
+    padding: 10px;
+    font-size: 0.95rem;
+    border-radius: 5px;
+    margin: 10px auto;
+    max-width: 95%;
+  }
+  #notice a {
+    color: #000;
+    text-decoration: underline;
+    margin: 0 5px;
+  }
+
+  h2.category-title {
+    background: #2a2a2a;
+    padding: 10px;
+    margin: 0;
+    font-size: 1.2rem;
+    text-transform: capitalize;
+    border-top: 2px solid #444;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #202020;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    transition: background 0.3s;
+  }
+
+  li:hover {
+    background: #2a2a2a;
+  }
+
+  .channel-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .channel-info img.logo {
+    width: 80px;
+    height: auto;
+    border-radius: 6px;
+    object-fit: contain;
+    background: #000;
+  }
+
+  .channel-info a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1rem;
+  }
+
+  .channel-info a:hover {
+    text-decoration: underline;
+  }
+
+  .channel-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .play-btn {
+    background: #ff5722;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+  }
+
+  .play-btn:hover {
+    background: #e64a19;
+  }
+
+  .favorite-btn {
+    background: none;
+    border: none;
+    color: #777;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+
+  .favorite-btn.active {
+    color: #ffcc00;
+  }
+
+  @media (max-width: 600px) {
+    .channel-info img.logo {
+      width: 60px;
+    }
+    .channel-info a {
+      font-size: 0.9rem;
+    }
+    .category-btn {
+      font-size: 0.85rem;
+      padding: 6px 12px;
+    }
+    .header-logo {
+      width: 30px;
+      height: 30px;
+    }
+    header h1 {
+      font-size: 1.2rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>
+    <img src="https://i.ibb.co/LzGF321b/vec-ace.jpg" 
+         alt="Logo" class="header-logo">
+    SUPERVECTAR AceStream DEPORTES
+  </h1>
+  <input type="text" id="searchInput" placeholder="🔍 Buscar canal...">
+</header>
+
+<div id="notice">
+  ⚠️ Para reproducir los canales es necesario tener instalado el reproductor ACESTREAM: 
+  <a href="https://play.google.com/store/apps/details?id=org.acestream.node&hl=es" target="_blank">Descargar AceStream Android</a> |
+  <a href="https://drive.google.com/file/d/1q997S8Niwa3g8hmjACZOaAOQ-OY-Fldl/view?usp=drive_link" target="_blank">Descargar AceStream Windows</a>
+</div>
+
+<div class="category-bar" id="categoryBar">
+  <button class="category-btn active" data-category="all" title="Todos los canales">Todos</button>
+  <button class="category-btn" data-category="favorites" title="⭐ Favoritos">⭐ Favoritos</button>
+</div>
+
+<div id="channelContainer"></div>
+
+<script>
+const LISTA_URL = "https://raw.githubusercontent.com/supervectar-coder/listaaACEdeportes/refs/heads/main/lista%20SUPERVECTAR%20ACESTREAM%20DEPORTES.m3u";
+const channelContainer = document.getElementById('channelContainer');
+const searchInput = document.getElementById('searchInput');
+const categoryBar = document.getElementById('categoryBar');
+
+let channels = [];
+let categories = new Set();
+let activeCategory = 'all';
+
+// ------------------ CARGAR LISTA --------------------
+fetch(LISTA_URL)
+.then(res => {
+  if(!res.ok) throw new Error(`Error HTTP ${res.status}`);
+  return res.text();
+})
+.then(text => {
+  const lines = text.split('\n');
+  for(let i=0;i<lines.length;i++){
+    const line = lines[i].trim();
+    if(line.startsWith('#EXTINF')){
+      const info = line.substring(8);
+      const parts = info.split(',');
+      const channelName = parts.length>1 ? parts[1].trim() : parts[0].trim();
+
+      let logoUrl = '';
+      let category = 'otros';
+      const attrs = parts[0].split(' ');
+      attrs.forEach(attr=>{
+        if(attr.startsWith('tvg-logo=')) logoUrl = attr.split('=')[1].replace(/"/g,'');
+        if(attr.startsWith('group-title=')) category = attr.split('=')[1].replace(/"/g,'');
+      });
+
+      const url = lines[++i]?.trim();
+      if(url){
+        channels.push({name:channelName, logo:logoUrl, category, url});
+        categories.add(category);
+      }
+    }
+  }
+  renderCategories();
+  renderChannels();
+})
+.catch(error=>{
+  console.error(error);
+  const notice = document.getElementById('notice');
+  notice.style.display='block';
+  notice.style.background='#b71c1c';
+  notice.style.color='#fff';
+  notice.innerHTML='⚠️ No se pudo cargar la lista IPTV. Revisa la conexión o URL.';
+});
+
+// ------------------ CATEGORÍAS --------------------
+function renderCategories(){
+  categories.forEach(cat=>{
+    const btn = document.createElement('button');
+    btn.className='category-btn';
+    btn.textContent=cat;
+    btn.dataset.category=cat;
+    btn.title=cat;
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.category-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCategory=cat;
+      renderChannels();
+    });
+    categoryBar.appendChild(btn);
+  });
+
+  document.querySelectorAll('.category-btn[data-category="all"], .category-btn[data-category="favorites"]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.category-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCategory=btn.dataset.category;
+      renderChannels();
+    });
+  });
+}
+
+// ------------------ RENDER CANALES --------------------
+function renderChannels(){
+  channelContainer.innerHTML='';
+  const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+  const searchTerm = searchInput.value.toLowerCase();
+
+  const grouped = {};
+  channels.forEach(c=>{
+    const isFav = savedFavorites.includes(c.url);
+    const matchCategory = activeCategory==='all' || c.category===activeCategory || (activeCategory==='favorites' && isFav);
+    const matchSearch = c.name.toLowerCase().includes(searchTerm);
+
+    if(matchCategory && matchSearch){
+      const catKey = (activeCategory==='favorites') ? '⭐ Favoritos' : c.category;
+      if(!grouped[catKey]) grouped[catKey]=[];
+      grouped[catKey].push(c);
+    }
+  });
+
+  let sortedCategories = Object.keys(grouped).sort((a,b)=>a.localeCompare(b));
+  sortedCategories.forEach(cat=>{
+    const h2 = document.createElement('h2');
+    h2.className='category-title';
+    h2.textContent = cat;
+    channelContainer.appendChild(h2);
+
+    const ul = document.createElement('ul');
+    // ❌ Eliminado el sort para mantener orden original de la M3U
+    // grouped[cat].sort((a,b)=>a.name.localeCompare(b.name));
+
+    grouped[cat].forEach(c=>{
+      const li=document.createElement('li');
+      li.innerHTML=`
+        <div class="channel-info">
+          <img src="${c.logo || 'https://via.placeholder.com/160x80?text=Logo'}" alt="${c.name} Logo" class="logo" loading="lazy">
+          <a href="${c.url}" data-url="${c.url}" title="Reproducir">${c.name}</a>
+        </div>
+        <div class="channel-actions">
+          <button class="play-btn">▶ Reproducir</button>
+          <button class="favorite-btn ${savedFavorites.includes(c.url)?'active':''}">★</button>
+        </div>
+      `;
+      li.querySelector('.play-btn').addEventListener('click',()=>{
+        if(c.url.startsWith('acestream://')) window.location.href=c.url;
+        else window.open(c.url,'_blank');
+      });
+      li.querySelector('a').addEventListener('click',e=>{
+        e.preventDefault();
+        if(c.url.startsWith('acestream://')) window.location.href=c.url;
+        else window.open(c.url,'_blank');
+      });
+      li.querySelector('.favorite-btn').addEventListener('click',e=>{
+        const btn=e.currentTarget;
+        btn.classList.toggle('active');
+        const favs=JSON.parse(localStorage.getItem('favorites')||'[]');
+        const idx=favs.indexOf(c.url);
+        if(btn.classList.contains('active')){if(idx===-1) favs.push(c.url);}
+        else{if(idx>-1) favs.splice(idx,1);}
+        localStorage.setItem('favorites',JSON.stringify(favs));
+        if(activeCategory==='favorites') renderChannels();
+      });
+      ul.appendChild(li);
+    });
+    channelContainer.appendChild(ul);
+  });
+}
+
+searchInput.addEventListener('input', renderChannels);
+</script>
+</body>
+</html>
